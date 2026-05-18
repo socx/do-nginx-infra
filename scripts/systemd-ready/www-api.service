@@ -1,0 +1,17 @@
+[Unit]
+Description=www api service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/apps/mydomain/api
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3002
+ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 3002
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

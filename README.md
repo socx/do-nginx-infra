@@ -2,88 +2,85 @@
 
 This repository is an infrastructure-only repo for NGINX reverse-proxy configuration.
 
-Your app code stays in separate repositories (for example `rms`, `asset-manager`, `golf-handicap-system`) and gets deployed by GitHub Actions into one droplet.
+Your app code stays in separate repositories and deploys to one droplet:
+
+- https://github.com/socx/mydomain
+- https://github.com/socx/rms
+- https://github.com/socx/asset-manager
+- https://github.com/socx/golf-handicap-system
 
 ## What This Repo Provides
 
-- Reusable NGINX snippets for proxying, gzip, and headers.
-- Server block templates for:
-	- IP-only access (no domain yet) with path routing.
-	- Single domain with subdomains.
-	- Multiple separate domains.
-- CI workflow templates for Node, Python, and Go app repos.
-- `systemd` unit templates to keep frontend, API, and worker processes running.
+- Production-ready NGINX configs for:
+  - IP-only mode with a base app at `/` and path-routed apps.
+  - DNS mode for `www.mydomain.com`, `rms.mydomain.com`, `asset-manager.mydomain.com`, and `ghs.mydomain.com`.
+  - HTTPS with redirects and TLS hardening.
+- Reusable snippets for proxying, security headers, gzip, and SSL defaults.
+- Ready-to-paste `systemd` service files for www, rms, asset-manager, and ghs.
+- Ready-to-copy GitHub Actions workflows customized per app repo.
 
 ## Important Clarification About IP-Based Hostnames
 
-Names like `rms.123.45.67.89` are usually not valid publicly resolvable DNS records.
+Names like `rms.123.45.67.89` are usually not publicly resolvable DNS hostnames.
 
-Use one of these until DNS is ready:
+Before DNS exists, use one of these:
 
-1. Path-based routes on bare IP (recommended initially):
-	 - `http://123.45.67.89/rms/`
-	 - `http://123.45.67.89/asset-manager/`
-	 - `http://123.45.67.89/ghs/`
-2. Local machine `/etc/hosts` entries (for your own testing only).
-3. Real DNS records (best for production).
+1. Path-based routes on bare IP (recommended).
+2. Local machine `/etc/hosts` entries for personal testing.
+3. Real DNS records for production.
 
-Also note: Let's Encrypt does not issue certificates for bare IP addresses. For HTTPS before DNS, use self-signed/private CA certs or a cloud load balancer with managed TLS.
+Also note: Let's Encrypt does not issue certificates for bare IP addresses. For HTTPS before DNS, use self-signed/private CA certs or a load balancer with managed TLS.
 
 ## Folder Structure
 
-- `sites-available/`: NGINX server block files you choose from.
-- `sites-enabled/`: Symlinks to active server block files.
+- `sites-available/`: NGINX server block files.
+- `sites-enabled/`: Symlinks to active server blocks.
 - `snippets/`: Shared include fragments.
-- `scripts/ci-templates/`: GitHub Actions templates to copy into each app repo.
-- `scripts/systemd-templates/`: Service unit templates for runtime processes.
+- `scripts/systemd-ready/`: Concrete service files, ready to copy.
+- `scripts/systemd-templates/`: Generic service templates.
+- `scripts/ci-ready/`: Repo-specific deploy workflows, ready to copy.
+- `scripts/ci-templates/`: Generic workflow templates by runtime.
 
-## Server Block Options
+## Production Server Block Profiles
 
-### Option A: No Domain Yet (IP + Paths)
+### Profile A: IP-Only (No DNS Yet)
 
-Use `sites-available/ip-only-paths.http.conf`.
+Use `sites-available/production-ip.http.conf`.
 
-Maps these local services:
+This gives:
 
-- RMS frontend: `127.0.0.1:5173`, API: `127.0.0.1:3000`
-- Asset Manager frontend: `127.0.0.1:5174`, API: `127.0.0.1:3004`
-- GHS frontend: `127.0.0.1:5175`, API: `127.0.0.1:3005`
+- `http://123.45.67.89/` -> mydomain frontend on `127.0.0.1:5172`
+- `http://123.45.67.89/api/` -> mydomain API on `127.0.0.1:3002`
+- `http://123.45.67.89/rms/` + `/rms/api/`
+- `http://123.45.67.89/asset-manager/` + `/asset-manager/api/`
+- `http://123.45.67.89/ghs/` + `/ghs/api/`
 
-Public routes become:
+### Profile B: DNS HTTP
 
-- `/rms/` and `/rms/api/`
-- `/asset-manager/` and `/asset-manager/api/`
-- `/ghs/` and `/ghs/api/`
+Use `sites-available/production-mydomain.http.conf`.
 
-### Option B: One Main Domain + Subdomains
+This gives:
 
-Use:
+- `http://www.mydomain.com`
+- `http://rms.mydomain.com`
+- `http://asset-manager.mydomain.com`
+- `http://ghs.mydomain.com`
 
-- HTTP only: `sites-available/subdomains.http.conf`
-- HTTPS: `sites-available/subdomains.https.conf`
+Each host routes `/api/` to its corresponding backend.
 
-Example hostnames:
+### Profile C: DNS HTTPS
 
-- `rms.example.com`, `api.rms.example.com`
-- `asset-manager.example.com`, `api.asset-manager.example.com`
-- `ghs.example.com`, `api.ghs.example.com`
+Use `sites-available/production-mydomain.https.conf` with `snippets/ssl-common.conf`.
 
-### Option C: Separate Domains per App
+This gives:
 
-Use:
+- HTTP to HTTPS redirects.
+- Apex redirect `https://mydomain.com` -> `https://www.mydomain.com`.
+- TLS defaults suitable for production baseline.
 
-- HTTP only: `sites-available/multi-domains.http.conf`
-- HTTPS: `sites-available/multi-domains.https.conf`
+## Step-by-Step Setup (DigitalOcean Style)
 
-Example hostnames:
-
-- `rms.example.com`, `api.rms.example.com`
-- `asset-manager.app`, `api.asset-manager.app`
-- `golf-handicap-system.dev`, `api.golf-handicap-system.dev`
-
-## Step-by-Step Setup (DigitalOcean Droplet)
-
-The flow below follows the DigitalOcean server-block pattern (`sites-available` + symlink into `sites-enabled`).
+This follows the DigitalOcean server-block pattern: put files in `sites-available`, then symlink into `sites-enabled`.
 
 ### 1. Bootstrap Droplet
 
@@ -95,7 +92,7 @@ sudo ufw allow 'Nginx Full'
 sudo ufw --force enable
 ```
 
-### 2. Clone This Infra Repo on Droplet
+### 2. Clone This Infra Repo
 
 ```bash
 sudo mkdir -p /opt/infra
@@ -104,31 +101,27 @@ git clone https://github.com/socx/do-nginx-infra /opt/infra/do-nginx-infra
 cd /opt/infra/do-nginx-infra
 ```
 
-### 3. Copy Shared Snippets
+### 3. Install Snippets
 
 ```bash
 sudo cp snippets/*.conf /etc/nginx/snippets/
 ```
 
-### 4. Pick and Activate One Site File
+### 4. Activate Profile
 
-IP-only example:
+IP-only profile:
 
 ```bash
-sudo cp sites-available/ip-only-paths.http.conf /etc/nginx/sites-available/apps.conf
+sudo cp sites-available/production-ip.http.conf /etc/nginx/sites-available/apps.conf
 sudo ln -sfn /etc/nginx/sites-available/apps.conf /etc/nginx/sites-enabled/apps.conf
+sudo rm -f /etc/nginx/sites-enabled/default
 ```
 
-Subdomain HTTP example:
+mydomain HTTP profile:
 
 ```bash
-sudo cp sites-available/subdomains.http.conf /etc/nginx/sites-available/apps.conf
+sudo cp sites-available/production-mydomain.http.conf /etc/nginx/sites-available/apps.conf
 sudo ln -sfn /etc/nginx/sites-available/apps.conf /etc/nginx/sites-enabled/apps.conf
-```
-
-Disable Ubuntu default site if needed:
-
-```bash
 sudo rm -f /etc/nginx/sites-enabled/default
 ```
 
@@ -139,118 +132,99 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-### 6. Set Up DNS (When Ready)
+### 6. Add DNS Records
 
-Create `A` records to droplet IP.
+Create A records to the droplet IP:
 
-Subdomain model example:
+- `mydomain.com`
+- `www.mydomain.com`
+- `rms.mydomain.com`
+- `asset-manager.mydomain.com`
+- `ghs.mydomain.com`
 
-- `rms.example.com` -> droplet IP
-- `api.rms.example.com` -> droplet IP
-- `asset-manager.example.com` -> droplet IP
-- `api.asset-manager.example.com` -> droplet IP
-- `ghs.example.com` -> droplet IP
-- `api.ghs.example.com` -> droplet IP
-
-### 7. Enable HTTPS (When DNS Exists)
-
-Start from HTTP config first (`subdomains.http.conf` or `multi-domains.http.conf`), then request certificates:
+### 7. Issue HTTPS Certificates
 
 ```bash
-sudo certbot --nginx -d rms.example.com -d api.rms.example.com
-sudo certbot --nginx -d asset-manager.example.com -d api.asset-manager.example.com
-sudo certbot --nginx -d ghs.example.com -d api.ghs.example.com
+sudo certbot --nginx -d mydomain.com -d www.mydomain.com
+sudo certbot --nginx -d rms.mydomain.com
+sudo certbot --nginx -d asset-manager.mydomain.com
+sudo certbot --nginx -d ghs.mydomain.com
 ```
 
-Then switch to HTTPS site file in this repo if you want explicit cert paths:
+### 8. Switch to HTTPS Profile
 
 ```bash
-sudo cp sites-available/subdomains.https.conf /etc/nginx/sites-available/apps.conf
+sudo cp sites-available/production-mydomain.https.conf /etc/nginx/sites-available/apps.conf
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## Deploying Each App Repo (Frontend/API/Worker)
+## Ready-to-Paste Service Files
 
-Each app repo should deploy its own artifacts to the droplet and restart only its own services.
+The following concrete service files are ready in `scripts/systemd-ready/`:
 
-Suggested service naming pattern per app:
+- `www-frontend.service`, `www-api.service`, `www-worker.service`
+- `rms-frontend.service`, `rms-api.service`, `rms-worker.service`
+- `asset-manager-frontend.service`, `asset-manager-api.service`, `asset-manager-worker.service`
+- `ghs-frontend.service`, `ghs-api.service`, `ghs-worker.service`
 
-- `rms-frontend.service`
-- `rms-api.service`
-- `rms-worker.service`
-
-Worker services are not exposed through NGINX.
-
-### 1. Create Service Units
-
-Copy and adapt templates from:
-
-- `scripts/systemd-templates/node-app.service.template`
-- `scripts/systemd-templates/python-app.service.template`
-- `scripts/systemd-templates/go-app.service.template`
-
-Install an example service:
+Install all services:
 
 ```bash
-sudo cp /opt/infra/do-nginx-infra/scripts/systemd-templates/node-app.service.template /etc/systemd/system/rms-api.service
-# Edit placeholders: <APP_NAME>, <PORT>, <ENTRYPOINT_JS>
+sudo cp scripts/systemd-ready/*.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now rms-api.service
-sudo systemctl status rms-api.service --no-pager
+sudo systemctl enable --now \
+  www-frontend www-api www-worker \
+  rms-frontend rms-api rms-worker \
+  asset-manager-frontend asset-manager-api asset-manager-worker \
+  ghs-frontend ghs-api ghs-worker
 ```
 
-Repeat for frontend and worker services.
+These service files assume each tier is Node-based and contains matching scripts:
 
-### 2. Add GitHub Actions in Each App Repo
+- Frontend/API: `npm run start`
+- Worker: `npm run worker`
 
-Copy one template into app repo `.github/workflows/deploy.yml`:
+Working directories are concrete:
 
-- Node app: `scripts/ci-templates/deploy-node.yml`
-- Python app: `scripts/ci-templates/deploy-python.yml`
-- Go app: `scripts/ci-templates/deploy-go.yml`
+- `/opt/apps/mydomain/{frontend,api,worker}`
+- `/opt/apps/rms/{frontend,api,worker}`
+- `/opt/apps/asset-manager/{frontend,api,worker}`
+- `/opt/apps/golf-handicap-system/{frontend,api,worker}`
 
-Set these repository secrets in each app repo:
+## Per-Repo Deploy Workflows (Customized)
 
-- `DROPLET_HOST`: droplet public IP
-- `DROPLET_USER`: SSH user (for example `root` or deploy user)
-- `DROPLET_SSH_KEY`: private key matching droplet authorized key
-- `APP_NAME`: deployment folder name under `/opt/apps`
-- `SYSTEMD_SERVICE`: service to restart (for example `rms-api`)
+Ready-to-copy deploy workflows are in `scripts/ci-ready/`:
 
-### 3. Example Mapping for Your Apps
+- `deploy-mydomain.yml`
+- `deploy-rms.yml`
+- `deploy-asset-manager.yml`
+- `deploy-ghs.yml`
 
-- `rms` repo:
-	- Frontend service binds `127.0.0.1:5173`
-	- API service binds `127.0.0.1:3000`
-	- Worker runs as background service (no public port)
-- `asset-manager` repo:
-	- Frontend `127.0.0.1:5174`
-	- API `127.0.0.1:3004`
-	- Worker as service
-- `golf-handicap-system` repo:
-	- Frontend `127.0.0.1:5175`
-	- API `127.0.0.1:3005`
-	- Worker as service
+Copy each into the matching app repo as `.github/workflows/deploy.yml`.
+
+Each workflow is customized to:
+
+- deploy into the matching `/opt/apps/<repo>` folder.
+- restart only matching services for that repo.
+- run frontend build and API test before packaging.
+
+Required repo secrets:
+
+- `DROPLET_HOST`
+- `DROPLET_USER`
+- `DROPLET_SSH_KEY`
 
 ## Operational Checks
-
-After each deployment:
 
 ```bash
 sudo nginx -t
 sudo systemctl reload nginx
+sudo systemctl status www-frontend www-api www-worker --no-pager
 sudo systemctl status rms-frontend rms-api rms-worker --no-pager
 sudo systemctl status asset-manager-frontend asset-manager-api asset-manager-worker --no-pager
 sudo systemctl status ghs-frontend ghs-api ghs-worker --no-pager
 ```
 
-## Notes on Frontend -> API Calls
+## Notes on API Routing
 
-- If frontend and API share the same hostname, route API as `/api` to avoid CORS complexity.
-- If frontend and API are on different subdomains, configure backend CORS allowlist explicitly.
-
-## Next Improvements
-
-- Add blue/green deployment folders (`/opt/apps/<app>/releases/...`) and symlink switching.
-- Add health checks in workflows before restarting services.
-- Add a rollback command per app in CI.
+This production profile uses same-host API routing by path (`/api`) for each app host/path to keep CORS simpler.

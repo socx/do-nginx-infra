@@ -1,0 +1,15 @@
+[Unit]
+Description=www worker service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/apps/mydomain/worker
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm run worker
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

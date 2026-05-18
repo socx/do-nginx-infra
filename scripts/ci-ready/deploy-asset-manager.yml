@@ -1,0 +1,68 @@
+name: Deploy asset-manager
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-asset-manager
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Test API
+        working-directory: api
+        run: |
+          npm ci
+          npm test --if-present
+
+      - name: Package repo
+        run: tar --exclude='.git' --exclude='**/node_modules' -czf release.tgz .
+
+      - name: Upload to droplet
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          source: "release.tgz"
+          target: "/tmp"
+
+      - name: Deploy and restart services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/apps/asset-manager"
+            sudo mkdir -p "$APP_DIR"
+            sudo tar -xzf /tmp/release.tgz -C "$APP_DIR"
+            rm -f /tmp/release.tgz
+
+            cd "$APP_DIR/frontend" && npm ci --omit=dev || true
+            cd "$APP_DIR/api" && npm ci --omit=dev || true
+            cd "$APP_DIR/worker" && npm ci --omit=dev || true
+
+            sudo systemctl daemon-reload
+            sudo systemctl restart asset-manager-frontend asset-manager-api asset-manager-worker
+            sudo systemctl status asset-manager-frontend asset-manager-api asset-manager-worker --no-pager
