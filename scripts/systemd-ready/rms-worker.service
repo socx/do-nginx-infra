@@ -6,8 +6,8 @@ After=network.target
 Type=simple
 User=www-data
 WorkingDirectory=/opt/apps/rms/worker
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm run worker
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/apps/rms/worker/.venv/bin/python -m worker
 Restart=always
 RestartSec=5
 

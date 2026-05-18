@@ -184,6 +184,11 @@ These service files assume each tier is Node-based and contains matching scripts
 - Frontend/API: `npm run start`
 - Worker: `npm run worker`
 
+Exception:
+
+- `rms-worker.service` is configured as Python and runs:
+  - `/opt/apps/rms/worker/.venv/bin/python -m worker`
+
 Working directories are concrete:
 
 - `/opt/apps/mydomain/{frontend,api,worker}`
