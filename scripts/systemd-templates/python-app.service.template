@@ -1,0 +1,16 @@
+[Unit]
+Description=<APP_NAME> service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/apps/<APP_NAME>
+Environment=PYTHONUNBUFFERED=1
+Environment=PORT=<PORT>
+ExecStart=/opt/apps/<APP_NAME>/.venv/bin/python <ENTRYPOINT_PY>
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

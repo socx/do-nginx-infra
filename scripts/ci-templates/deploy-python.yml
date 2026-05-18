@@ -1,0 +1,65 @@
+name: Deploy Python App to Droplet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run tests
+        run: |
+          if [ -d tests ]; then pytest -q; else echo "No tests directory; skipping"; fi
+
+      - name: Package artifact
+        run: tar --exclude='.git' --exclude='__pycache__' -czf release.tgz .
+
+      - name: Upload artifact to droplet
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          source: "release.tgz"
+          target: "/tmp"
+
+      - name: Deploy and restart service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/apps/${{ secrets.APP_NAME }}"
+            sudo mkdir -p "$APP_DIR"
+            sudo tar -xzf /tmp/release.tgz -C "$APP_DIR"
+            rm -f /tmp/release.tgz
+
+            cd "$APP_DIR"
+            if [ -f requirements.txt ]; then
+              python3 -m venv .venv
+              source .venv/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
+            fi
+
+            sudo systemctl daemon-reload
+            sudo systemctl restart "${{ secrets.SYSTEMD_SERVICE }}"
+            sudo systemctl status "${{ secrets.SYSTEMD_SERVICE }}" --no-pager

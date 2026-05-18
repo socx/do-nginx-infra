@@ -1,0 +1,15 @@
+[Unit]
+Description=<APP_NAME> service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/apps/<APP_NAME>
+Environment=PORT=<PORT>
+ExecStart=/opt/apps/<APP_NAME>/app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+name: Deploy Node App to Droplet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --if-present
+
+      - name: Build app
+        run: npm run build --if-present
+
+      - name: Package artifact
+        run: |
+          tar --exclude='.git' --exclude='node_modules' -czf release.tgz .
+
+      - name: Upload artifact to droplet
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          source: "release.tgz"
+          target: "/tmp"
+
+      - name: Deploy and restart service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/apps/${{ secrets.APP_NAME }}"
+            sudo mkdir -p "$APP_DIR"
+            sudo tar -xzf /tmp/release.tgz -C "$APP_DIR"
+            rm -f /tmp/release.tgz
+
+            cd "$APP_DIR"
+            if [ -f package-lock.json ]; then
+              npm ci --omit=dev
+            fi
+
+            sudo systemctl daemon-reload
+            sudo systemctl restart "${{ secrets.SYSTEMD_SERVICE }}"
+            sudo systemctl status "${{ secrets.SYSTEMD_SERVICE }}" --no-pager

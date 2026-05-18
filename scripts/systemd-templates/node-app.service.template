@@ -1,0 +1,16 @@
+[Unit]
+Description=<APP_NAME> service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/apps/<APP_NAME>
+Environment=NODE_ENV=production
+Environment=PORT=<PORT>
+ExecStart=/usr/bin/node /opt/apps/<APP_NAME>/<ENTRYPOINT_JS>
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

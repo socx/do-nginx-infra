@@ -1,0 +1,56 @@
+name: Deploy Go App to Droplet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app ./...
+
+      - name: Package artifact
+        run: tar --exclude='.git' -czf release.tgz app
+
+      - name: Upload artifact to droplet
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          source: "release.tgz"
+          target: "/tmp"
+
+      - name: Deploy and restart service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/apps/${{ secrets.APP_NAME }}"
+            sudo mkdir -p "$APP_DIR"
+            sudo tar -xzf /tmp/release.tgz -C "$APP_DIR"
+            rm -f /tmp/release.tgz
+
+            sudo chmod +x "$APP_DIR/app"
+            sudo systemctl daemon-reload
+            sudo systemctl restart "${{ secrets.SYSTEMD_SERVICE }}"
+            sudo systemctl status "${{ secrets.SYSTEMD_SERVICE }}" --no-pager
