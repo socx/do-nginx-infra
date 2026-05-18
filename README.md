@@ -82,6 +82,26 @@ This gives:
 
 This follows the DigitalOcean server-block pattern: put files in `sites-available`, then symlink into `sites-enabled`.
 
+### One-Command Bootstrap
+
+From this repo on the droplet:
+
+```bash
+sudo bash scripts/bootstrap.sh --profile ip
+```
+
+Profile options:
+
+- `ip`
+- `dns-http`
+- `dns-https`
+
+If app code is already deployed and dependencies are installed, you can also start all services immediately:
+
+```bash
+sudo bash scripts/bootstrap.sh --profile dns-https --start-services
+```
+
 ### 1. Bootstrap Droplet
 
 ```bash
