@@ -14,6 +14,43 @@ Usage:
   sudo bash scripts/bootstrap.sh [--profile ip|dns-http|dns-https] [--start-services]
 
 Options:
+
+if [[ "$PROFILE" == "dns-https" ]]; then
+  CERT_FILES=(
+    /etc/letsencrypt/live/socx.org.uk/fullchain.pem
+    /etc/letsencrypt/live/socx.org.uk/privkey.pem
+    /etc/letsencrypt/live/www.socx.org.uk/fullchain.pem
+    /etc/letsencrypt/live/www.socx.org.uk/privkey.pem
+    /etc/letsencrypt/live/rms.socx.org.uk/fullchain.pem
+    /etc/letsencrypt/live/rms.socx.org.uk/privkey.pem
+    /etc/letsencrypt/live/ams.socx.org.uk/fullchain.pem
+    /etc/letsencrypt/live/ams.socx.org.uk/privkey.pem
+    /etc/letsencrypt/live/ghs.socx.org.uk/fullchain.pem
+    /etc/letsencrypt/live/ghs.socx.org.uk/privkey.pem
+  )
+
+  MISSING_CERTS=()
+  for f in "${CERT_FILES[@]}"; do
+    if [[ ! -f "$f" ]]; then
+      MISSING_CERTS+=("$f")
+    fi
+  done
+
+  if [[ "${#MISSING_CERTS[@]}" -gt 0 ]]; then
+    echo "dns-https profile selected but required certificate files are missing:"
+    printf '  - %s\n' "${MISSING_CERTS[@]}"
+    echo
+    echo "Run bootstrap with dns-http first, then issue certs:"
+    echo "  sudo bash scripts/bootstrap.sh --profile dns-http"
+    echo "  sudo certbot --nginx -d socx.org.uk -d www.socx.org.uk"
+    echo "  sudo certbot --nginx -d rms.socx.org.uk"
+    echo "  sudo certbot --nginx -d ams.socx.org.uk"
+    echo "  sudo certbot --nginx -d ghs.socx.org.uk"
+    echo "Then re-run:"
+    echo "  sudo bash scripts/bootstrap.sh --profile dns-https"
+    exit 1
+  fi
+fi
   --profile         NGINX profile to activate (default: ip)
   --start-services  Start services immediately after enable (default: disabled)
   -h, --help        Show this help
@@ -73,7 +110,11 @@ case "$PROFILE" in
 esac
 
 echo "[1/8] Installing packages"
-export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_ssh deploy@your-droplet
+cd ~
+git clone https://github.com/socx/do-nginx-infra.git
+cd do-nginx-infra
+sudo bash scripts/bootstrap.sh --profile dns-https=noninteractive
 apt-get update -y
 apt-get install -y nginx certbot python3-certbot-nginx git python3 python3-venv
 

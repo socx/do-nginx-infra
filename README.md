@@ -96,7 +96,7 @@ Profile options:
 - `dns-http`
 - `dns-https`
 
-If app code is already deployed and dependencies are installed, you can also start all services immediately:
+After certificates are issued and app code is already deployed, you can also start all services immediately:
 
 ```bash
 sudo bash scripts/bootstrap.sh --profile dns-https --start-services
