@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
+User=deploy
 WorkingDirectory=/opt/apps/rms/web
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1

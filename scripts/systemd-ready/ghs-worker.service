@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
-WorkingDirectory=/opt/apps/golf-handicap-system/worker
+User=deploy
+WorkingDirectory=/opt/apps/ghs/worker
 Environment=NODE_ENV=production
 ExecStart=/usr/bin/npm run worker
 Restart=always

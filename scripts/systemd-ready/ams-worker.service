@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
+User=deploy
 WorkingDirectory=/opt/apps/ams/worker
 Environment=NODE_ENV=production
 ExecStart=/usr/bin/npm run worker

@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
+User=deploy
 WorkingDirectory=/opt/apps/rms/worker
 Environment=PYTHONUNBUFFERED=1
 ExecStart=/opt/apps/rms/worker/.venv/bin/python -m worker
