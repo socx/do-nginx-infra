@@ -211,7 +211,7 @@ Exception:
 
 Working directories are concrete:
 
-- `/opt/apps/socx-org-uk/{web,api,worker}`
+- `/opt/apps/www/{web,api,worker}`
 - `/opt/apps/rms/{web,api,worker}`
 - `/opt/apps/ams/{web,api,worker}`
 - `/opt/apps/golf-handicap-system/{web,api,worker}`

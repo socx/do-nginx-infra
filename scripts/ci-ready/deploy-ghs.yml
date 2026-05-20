@@ -55,7 +55,7 @@ jobs:
           script: |
             set -euo pipefail
             DEPLOY_USER="$(id -un)"
-            APP_DIR="/opt/apps/golf-handicap-system"
+            APP_DIR="/opt/apps/ghs"
             sudo mkdir -p "$APP_DIR"
             sudo chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
             tar -xzf /tmp/release.tgz -C "$APP_DIR"

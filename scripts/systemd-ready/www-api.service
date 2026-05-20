@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/socx-org-uk/api
+WorkingDirectory=/opt/apps/www/api
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3002
