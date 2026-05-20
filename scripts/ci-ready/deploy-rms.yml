@@ -54,15 +54,27 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
             set -euo pipefail
+            DEPLOY_USER="$(id -un)"
             APP_DIR="/opt/apps/rms"
             sudo mkdir -p "$APP_DIR"
-            sudo tar -xzf /tmp/release.tgz -C "$APP_DIR"
+            sudo chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
+            tar -xzf /tmp/release.tgz -C "$APP_DIR"
             rm -f /tmp/release.tgz
 
             cd "$APP_DIR/frontend" && npm ci --omit=dev || true
             cd "$APP_DIR/api" && npm ci --omit=dev || true
-            cd "$APP_DIR/worker" && npm ci --omit=dev || true
+            if [ -d "$APP_DIR/worker" ]; then
+              cd "$APP_DIR/worker"
+              python3 -m venv .venv
+              . .venv/bin/activate
+              python -m pip install --upgrade pip
+              if [ -f requirements.txt ]; then
+                pip install -r requirements.txt
+              elif [ -f pyproject.toml ]; then
+                pip install .
+              fi
+            fi
 
             sudo systemctl daemon-reload
-            sudo systemctl restart rms-frontend rms-api rms-worker
-            sudo systemctl status rms-frontend rms-api rms-worker --no-pager
+            sudo systemctl restart rms-web rms-api rms-worker
+            sudo systemctl status rms-web rms-api rms-worker --no-pager

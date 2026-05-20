@@ -97,10 +97,10 @@ cp "$REPO_ROOT"/scripts/systemd-ready/*.service /etc/systemd/system/
 
 echo "[6/8] Enabling services"
 SERVICES=(
-  www-frontend www-api www-worker
-  rms-frontend rms-api rms-worker
-  asset-manager-frontend asset-manager-api asset-manager-worker
-  ghs-frontend ghs-api ghs-worker
+  www-web www-api www-worker
+  rms-web rms-api rms-worker
+  ams-web asset-manager-api asset-manager-worker
+  ghs-web ghs-api ghs-worker
 )
 
 systemctl daemon-reload

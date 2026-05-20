@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/mydomain/worker
+WorkingDirectory=/opt/apps/socx-org-uk/worker
 Environment=NODE_ENV=production
 ExecStart=/usr/bin/npm run worker
 Restart=always

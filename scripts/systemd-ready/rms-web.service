@@ -1,15 +1,15 @@
 [Unit]
-Description=asset-manager frontend service
+Description=rms web service
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/asset-manager/frontend
+WorkingDirectory=/opt/apps/rms/frontend
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
-Environment=PORT=5174
-ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 5174
+Environment=PORT=5173
+ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 5173
 Restart=always
 RestartSec=5
 

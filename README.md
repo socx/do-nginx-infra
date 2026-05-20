@@ -4,7 +4,7 @@ This repository is an infrastructure-only repo for NGINX reverse-proxy configura
 
 Your app code stays in separate repositories and deploys to one droplet:
 
-- https://github.com/socx/mydomain
+- https://github.com/socx/socx-org-uk
 - https://github.com/socx/rms
 - https://github.com/socx/asset-manager
 - https://github.com/socx/golf-handicap-system
@@ -13,7 +13,7 @@ Your app code stays in separate repositories and deploys to one droplet:
 
 - Production-ready NGINX configs for:
   - IP-only mode with a base app at `/` and path-routed apps.
-  - DNS mode for `www.mydomain.com`, `rms.mydomain.com`, `asset-manager.mydomain.com`, and `ghs.mydomain.com`.
+  - DNS mode for `www.socx.org.uk`, `rms.socx.org.uk`, `ams.socx.org.uk`, and `ghs.socx.org.uk`.
   - HTTPS with redirects and TLS hardening.
 - Reusable snippets for proxying, security headers, gzip, and SSL defaults.
 - Ready-to-paste `systemd` service files for www, rms, asset-manager, and ghs.
@@ -49,10 +49,10 @@ Use `sites-available/production-ip.http.conf`.
 
 This gives:
 
-- `http://123.45.67.89/` -> mydomain frontend on `127.0.0.1:5172`
-- `http://123.45.67.89/api/` -> mydomain API on `127.0.0.1:3002`
+- `http://123.45.67.89/` -> socx-org-uk web on `127.0.0.1:5172`
+- `http://123.45.67.89/api/` -> socx-org-uk API on `127.0.0.1:3002`
 - `http://123.45.67.89/rms/` + `/rms/api/`
-- `http://123.45.67.89/asset-manager/` + `/asset-manager/api/`
+- `http://123.45.67.89/ams/` + `/ams/api/`
 - `http://123.45.67.89/ghs/` + `/ghs/api/`
 
 ### Profile B: DNS HTTP
@@ -61,10 +61,10 @@ Use `sites-available/production-mydomain.http.conf`.
 
 This gives:
 
-- `http://www.mydomain.com`
-- `http://rms.mydomain.com`
-- `http://asset-manager.mydomain.com`
-- `http://ghs.mydomain.com`
+- `http://www.socx.org.uk`
+- `http://rms.socx.org.uk`
+- `http://ams.socx.org.uk`
+- `http://ghs.socx.org.uk`
 
 Each host routes `/api/` to its corresponding backend.
 
@@ -75,7 +75,7 @@ Use `sites-available/production-mydomain.https.conf` with `snippets/ssl-common.c
 This gives:
 
 - HTTP to HTTPS redirects.
-- Apex redirect `https://mydomain.com` -> `https://www.mydomain.com`.
+- Apex redirect `https://socx.org.uk` -> `https://www.socx.org.uk`.
 - TLS defaults suitable for production baseline.
 
 ## Step-by-Step Setup (DigitalOcean Style)
@@ -137,7 +137,7 @@ sudo ln -sfn /etc/nginx/sites-available/apps.conf /etc/nginx/sites-enabled/apps.
 sudo rm -f /etc/nginx/sites-enabled/default
 ```
 
-mydomain HTTP profile:
+socx.org.uk HTTP profile:
 
 ```bash
 sudo cp sites-available/production-mydomain.http.conf /etc/nginx/sites-available/apps.conf
@@ -156,19 +156,19 @@ sudo systemctl reload nginx
 
 Create A records to the droplet IP:
 
-- `mydomain.com`
-- `www.mydomain.com`
-- `rms.mydomain.com`
-- `asset-manager.mydomain.com`
-- `ghs.mydomain.com`
+- `socx.org.uk`
+- `www.socx.org.uk`
+- `rms.socx.org.uk`
+- `ams.socx.org.uk`
+- `ghs.socx.org.uk`
 
 ### 7. Issue HTTPS Certificates
 
 ```bash
-sudo certbot --nginx -d mydomain.com -d www.mydomain.com
-sudo certbot --nginx -d rms.mydomain.com
-sudo certbot --nginx -d asset-manager.mydomain.com
-sudo certbot --nginx -d ghs.mydomain.com
+sudo certbot --nginx -d socx.org.uk -d www.socx.org.uk
+sudo certbot --nginx -d rms.socx.org.uk
+sudo certbot --nginx -d ams.socx.org.uk
+sudo certbot --nginx -d ghs.socx.org.uk
 ```
 
 ### 8. Switch to HTTPS Profile
@@ -182,10 +182,10 @@ sudo nginx -t && sudo systemctl reload nginx
 
 The following concrete service files are ready in `scripts/systemd-ready/`:
 
-- `www-frontend.service`, `www-api.service`, `www-worker.service`
-- `rms-frontend.service`, `rms-api.service`, `rms-worker.service`
-- `asset-manager-frontend.service`, `asset-manager-api.service`, `asset-manager-worker.service`
-- `ghs-frontend.service`, `ghs-api.service`, `ghs-worker.service`
+- `www-web.service`, `www-api.service`, `www-worker.service`
+- `rms-web.service`, `rms-api.service`, `rms-worker.service`
+- `ams-web.service`, `asset-manager-api.service`, `asset-manager-worker.service`
+- `ghs-web.service`, `ghs-api.service`, `ghs-worker.service`
 
 Install all services:
 
@@ -193,10 +193,10 @@ Install all services:
 sudo cp scripts/systemd-ready/*.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now \
-  www-frontend www-api www-worker \
-  rms-frontend rms-api rms-worker \
-  asset-manager-frontend asset-manager-api asset-manager-worker \
-  ghs-frontend ghs-api ghs-worker
+  www-web www-api www-worker \
+  rms-web rms-api rms-worker \
+  ams-web asset-manager-api asset-manager-worker \
+  ghs-web ghs-api ghs-worker
 ```
 
 These service files assume each tier is Node-based and contains matching scripts:
@@ -211,7 +211,7 @@ Exception:
 
 Working directories are concrete:
 
-- `/opt/apps/mydomain/{frontend,api,worker}`
+- `/opt/apps/socx-org-uk/{frontend,api,worker}`
 - `/opt/apps/rms/{frontend,api,worker}`
 - `/opt/apps/asset-manager/{frontend,api,worker}`
 - `/opt/apps/golf-handicap-system/{frontend,api,worker}`
@@ -220,7 +220,7 @@ Working directories are concrete:
 
 Ready-to-copy deploy workflows are in `scripts/ci-ready/`:
 
-- `deploy-mydomain.yml`
+- `deploy-socx-org-uk.yml`
 - `deploy-rms.yml`
 - `deploy-asset-manager.yml`
 - `deploy-ghs.yml`
@@ -244,10 +244,10 @@ Required repo secrets:
 ```bash
 sudo nginx -t
 sudo systemctl reload nginx
-sudo systemctl status www-frontend www-api www-worker --no-pager
-sudo systemctl status rms-frontend rms-api rms-worker --no-pager
-sudo systemctl status asset-manager-frontend asset-manager-api asset-manager-worker --no-pager
-sudo systemctl status ghs-frontend ghs-api ghs-worker --no-pager
+sudo systemctl status www-web www-api www-worker --no-pager
+sudo systemctl status rms-web rms-api rms-worker --no-pager
+sudo systemctl status ams-web asset-manager-api asset-manager-worker --no-pager
+sudo systemctl status ghs-web ghs-api ghs-worker --no-pager
 ```
 
 ## Notes on API Routing

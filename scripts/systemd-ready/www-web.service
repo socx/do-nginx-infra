@@ -1,11 +1,11 @@
 [Unit]
-Description=www frontend service
+Description=www web service
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/mydomain/frontend
+WorkingDirectory=/opt/apps/socx-org-uk/frontend
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=5172

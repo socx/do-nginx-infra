@@ -1,15 +1,15 @@
 [Unit]
-Description=ghs frontend service
+Description=ams web service
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/golf-handicap-system/frontend
+WorkingDirectory=/opt/apps/asset-manager/frontend
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
-Environment=PORT=5175
-ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 5175
+Environment=PORT=5174
+ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 5174
 Restart=always
 RestartSec=5
 
