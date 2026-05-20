@@ -76,5 +76,12 @@ jobs:
             fi
 
             sudo systemctl daemon-reload
-            sudo systemctl restart rms-web rms-api rms-worker
-            sudo systemctl status rms-web rms-api rms-worker --no-pager
+            for svc in rms-web rms-api rms-worker; do
+              if systemctl list-unit-files --type=service | grep -q "^${svc}\.service"; then
+                sudo systemctl enable "$svc"
+                sudo systemctl restart "$svc"
+                sudo systemctl status "$svc" --no-pager || true
+              else
+                echo "Skipping missing unit: ${svc}.service"
+              fi
+            done

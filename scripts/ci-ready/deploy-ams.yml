@@ -66,5 +66,12 @@ jobs:
             cd "$APP_DIR/worker" && npm ci --omit=dev || true
 
             sudo systemctl daemon-reload
-            sudo systemctl restart ams-web ams-api ams-worker
-            sudo systemctl status ams-web ams-api ams-worker --no-pager
+            for svc in ams-web ams-api ams-worker; do
+              if systemctl list-unit-files --type=service | grep -q "^${svc}\.service"; then
+                sudo systemctl enable "$svc"
+                sudo systemctl restart "$svc"
+                sudo systemctl status "$svc" --no-pager || true
+              else
+                echo "Skipping missing unit: ${svc}.service"
+              fi
+            done

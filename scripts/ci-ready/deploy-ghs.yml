@@ -66,5 +66,12 @@ jobs:
             cd "$APP_DIR/worker" && npm ci --omit=dev || true
 
             sudo systemctl daemon-reload
-            sudo systemctl restart ghs-web ghs-api ghs-worker
-            sudo systemctl status ghs-web ghs-api ghs-worker --no-pager
+            for svc in ghs-web ghs-api ghs-worker; do
+              if systemctl list-unit-files --type=service | grep -q "^${svc}\.service"; then
+                sudo systemctl enable "$svc"
+                sudo systemctl restart "$svc"
+                sudo systemctl status "$svc" --no-pager || true
+              else
+                echo "Skipping missing unit: ${svc}.service"
+              fi
+            done

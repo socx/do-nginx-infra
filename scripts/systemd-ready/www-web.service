@@ -5,11 +5,11 @@ After=network.target
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/apps/www/web
+WorkingDirectory=/opt/apps/www/apps/web
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=5172
-ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 5172
+ExecStart=/usr/bin/npm run preview -- --host 127.0.0.1 --port 5172
 Restart=always
 RestartSec=5
 
