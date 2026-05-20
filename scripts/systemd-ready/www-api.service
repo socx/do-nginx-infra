@@ -10,7 +10,7 @@ Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3002
 Environment=API_PORT=3002
-ExecStart=/usr/bin/node src/index.js
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && node src/index.js'
 Restart=always
 RestartSec=5
 

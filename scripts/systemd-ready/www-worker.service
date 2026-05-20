@@ -7,7 +7,7 @@ Type=simple
 User=deploy
 WorkingDirectory=/opt/apps/www/apps/worker
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm run worker
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run worker'
 Restart=always
 RestartSec=5
 

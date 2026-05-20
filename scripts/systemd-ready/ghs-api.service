@@ -9,7 +9,7 @@ WorkingDirectory=/opt/apps/ghs/api
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3005
-ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 3005
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run start -- --host 127.0.0.1 --port 3005'
 Restart=always
 RestartSec=5
 

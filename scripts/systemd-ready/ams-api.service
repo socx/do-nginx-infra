@@ -9,7 +9,7 @@ WorkingDirectory=/opt/apps/ams/api
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3004
-ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 3004
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run start -- --host 127.0.0.1 --port 3004'
 Restart=always
 RestartSec=5
 

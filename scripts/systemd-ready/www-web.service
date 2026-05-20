@@ -9,7 +9,7 @@ WorkingDirectory=/opt/apps/www/apps/web
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=5172
-ExecStart=/usr/bin/npm run preview -- --host 127.0.0.1 --port 5172
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run preview -- --host 127.0.0.1 --port 5172'
 Restart=always
 RestartSec=5
 

@@ -9,7 +9,7 @@ WorkingDirectory=/opt/apps/rms/api
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3000
-ExecStart=/usr/bin/npm run start -- --host 127.0.0.1 --port 3000
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run start -- --host 127.0.0.1 --port 3000'
 Restart=always
 RestartSec=5
 
