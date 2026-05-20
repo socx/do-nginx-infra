@@ -110,11 +110,7 @@ case "$PROFILE" in
 esac
 
 echo "[1/8] Installing packages"
-export DEBIAN_ssh deploy@your-droplet
-cd ~
-git clone https://github.com/socx/do-nginx-infra.git
-cd do-nginx-infra
-sudo bash scripts/bootstrap.sh --profile dns-https=noninteractive
+export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 apt-get install -y nginx certbot python3-certbot-nginx git python3 python3-venv
 
