@@ -23,7 +23,7 @@ jobs:
           node-version: "20"
 
       - name: Build frontend
-        working-directory: frontend
+        working-directory: web
         run: |
           npm ci
           npm run build
@@ -61,7 +61,7 @@ jobs:
             tar -xzf /tmp/release.tgz -C "$APP_DIR"
             rm -f /tmp/release.tgz
 
-            cd "$APP_DIR/frontend" && npm ci --omit=dev || true
+            cd "$APP_DIR/web" && npm ci --omit=dev || true
             cd "$APP_DIR/api" && npm ci --omit=dev || true
             cd "$APP_DIR/worker" && npm ci --omit=dev || true
 

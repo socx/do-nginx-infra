@@ -1,4 +1,4 @@
-name: Deploy asset-manager
+name: Deploy ams
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-asset-manager
+  group: deploy-ams
   cancel-in-progress: true
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
           node-version: "20"
 
       - name: Build frontend
-        working-directory: frontend
+        working-directory: web
         run: |
           npm ci
           npm run build
@@ -55,16 +55,16 @@ jobs:
           script: |
             set -euo pipefail
             DEPLOY_USER="$(id -un)"
-            APP_DIR="/opt/apps/asset-manager"
+            APP_DIR="/opt/apps/ams"
             sudo mkdir -p "$APP_DIR"
             sudo chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
             tar -xzf /tmp/release.tgz -C "$APP_DIR"
             rm -f /tmp/release.tgz
 
-            cd "$APP_DIR/frontend" && npm ci --omit=dev || true
+            cd "$APP_DIR/web" && npm ci --omit=dev || true
             cd "$APP_DIR/api" && npm ci --omit=dev || true
             cd "$APP_DIR/worker" && npm ci --omit=dev || true
 
             sudo systemctl daemon-reload
-            sudo systemctl restart ams-web asset-manager-api asset-manager-worker
-            sudo systemctl status ams-web asset-manager-api asset-manager-worker --no-pager
+            sudo systemctl restart ams-web ams-api ams-worker
+            sudo systemctl status ams-web ams-api ams-worker --no-pager

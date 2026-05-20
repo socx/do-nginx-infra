@@ -16,7 +16,7 @@ Your app code stays in separate repositories and deploys to one droplet:
   - DNS mode for `www.socx.org.uk`, `rms.socx.org.uk`, `ams.socx.org.uk`, and `ghs.socx.org.uk`.
   - HTTPS with redirects and TLS hardening.
 - Reusable snippets for proxying, security headers, gzip, and SSL defaults.
-- Ready-to-paste `systemd` service files for www, rms, asset-manager, and ghs.
+- Ready-to-paste `systemd` service files for www, rms, ams, and ghs.
 - Ready-to-copy GitHub Actions workflows customized per app repo.
 
 ## Important Clarification About IP-Based Hostnames
@@ -184,7 +184,7 @@ The following concrete service files are ready in `scripts/systemd-ready/`:
 
 - `www-web.service`, `www-api.service`, `www-worker.service`
 - `rms-web.service`, `rms-api.service`, `rms-worker.service`
-- `ams-web.service`, `asset-manager-api.service`, `asset-manager-worker.service`
+- `ams-web.service`, `ams-api.service`, `ams-worker.service`
 - `ghs-web.service`, `ghs-api.service`, `ghs-worker.service`
 
 Install all services:
@@ -195,7 +195,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now \
   www-web www-api www-worker \
   rms-web rms-api rms-worker \
-  ams-web asset-manager-api asset-manager-worker \
+  ams-web ams-api ams-worker \
   ghs-web ghs-api ghs-worker
 ```
 
@@ -211,10 +211,10 @@ Exception:
 
 Working directories are concrete:
 
-- `/opt/apps/socx-org-uk/{frontend,api,worker}`
-- `/opt/apps/rms/{frontend,api,worker}`
-- `/opt/apps/asset-manager/{frontend,api,worker}`
-- `/opt/apps/golf-handicap-system/{frontend,api,worker}`
+- `/opt/apps/socx-org-uk/{web,api,worker}`
+- `/opt/apps/rms/{web,api,worker}`
+- `/opt/apps/ams/{web,api,worker}`
+- `/opt/apps/golf-handicap-system/{web,api,worker}`
 
 ## Per-Repo Deploy Workflows (Customized)
 
@@ -222,7 +222,7 @@ Ready-to-copy deploy workflows are in `scripts/ci-ready/`:
 
 - `deploy-socx-org-uk.yml`
 - `deploy-rms.yml`
-- `deploy-asset-manager.yml`
+- `deploy-ams.yml`
 - `deploy-ghs.yml`
 
 Copy each into the matching app repo as `.github/workflows/deploy.yml`.
@@ -231,7 +231,7 @@ Each workflow is customized to:
 
 - deploy into the matching `/opt/apps/<repo>` folder.
 - restart only matching services for that repo.
-- run frontend build and API test before packaging.
+- run web frontend build and API test before packaging.
 
 Required repo secrets:
 
@@ -246,7 +246,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 sudo systemctl status www-web www-api www-worker --no-pager
 sudo systemctl status rms-web rms-api rms-worker --no-pager
-sudo systemctl status ams-web asset-manager-api asset-manager-worker --no-pager
+sudo systemctl status ams-web ams-api ams-worker --no-pager
 sudo systemctl status ghs-web ghs-api ghs-worker --no-pager
 ```
 

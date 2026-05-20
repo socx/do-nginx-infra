@@ -1,11 +1,11 @@
 [Unit]
-Description=ams web service
+Description=asset-manager web service
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/asset-manager/frontend
+WorkingDirectory=/opt/apps/ams/web
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=5174

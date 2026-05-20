@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/apps/rms/frontend
+WorkingDirectory=/opt/apps/rms/web
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=5173

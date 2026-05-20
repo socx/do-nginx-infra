@@ -99,7 +99,7 @@ echo "[6/8] Enabling services"
 SERVICES=(
   www-web www-api www-worker
   rms-web rms-api rms-worker
-  ams-web asset-manager-api asset-manager-worker
+  ams-web ams-api ams-worker
   ghs-web ghs-api ghs-worker
 )
 
