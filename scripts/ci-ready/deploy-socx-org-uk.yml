@@ -59,11 +59,22 @@ jobs:
             APP_DIR="/opt/apps/www"
             sudo mkdir -p "$APP_DIR"
             sudo chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
+            if [ -s "$HOME/.nvm/nvm.sh" ]; then
+              . "$HOME/.nvm/nvm.sh"
+              nvm use node >/dev/null 2>&1 || true
+            fi
+            export PATH="$HOME/.nvm/versions/node/*/bin:$HOME/node_modules/.bin:/usr/local/bin:/usr/bin:$PATH"
+            NPM_BIN="$(command -v npm || true)"
+            if [ -z "$NPM_BIN" ]; then
+              echo "npm not found on remote host. Install Node.js for deploy user or system-wide." >&2
+              exit 1
+            fi
+
             tar -xzf /tmp/release.tgz -C "$APP_DIR"
             rm -f /tmp/release.tgz
 
             cd "$APP_DIR"
-            npm ci
+            "$NPM_BIN" ci
 
             sudo systemctl daemon-reload
             for svc in www-web www-api www-worker; do

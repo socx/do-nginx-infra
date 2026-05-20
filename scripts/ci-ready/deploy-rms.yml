@@ -58,11 +58,22 @@ jobs:
             APP_DIR="/opt/apps/rms"
             sudo mkdir -p "$APP_DIR"
             sudo chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
+            if [ -s "$HOME/.nvm/nvm.sh" ]; then
+              . "$HOME/.nvm/nvm.sh"
+              nvm use node >/dev/null 2>&1 || true
+            fi
+            export PATH="$HOME/.nvm/versions/node/*/bin:$HOME/node_modules/.bin:/usr/local/bin:/usr/bin:$PATH"
+            NPM_BIN="$(command -v npm || true)"
+            if [ -z "$NPM_BIN" ]; then
+              echo "npm not found on remote host. Install Node.js for deploy user or system-wide." >&2
+              exit 1
+            fi
+
             tar -xzf /tmp/release.tgz -C "$APP_DIR"
             rm -f /tmp/release.tgz
 
-            cd "$APP_DIR/web" && npm ci --omit=dev || true
-            cd "$APP_DIR/api" && npm ci --omit=dev || true
+            cd "$APP_DIR/web" && "$NPM_BIN" ci --omit=dev || true
+            cd "$APP_DIR/api" && "$NPM_BIN" ci --omit=dev || true
             if [ -d "$APP_DIR/worker" ]; then
               cd "$APP_DIR/worker"
               python3 -m venv .venv
