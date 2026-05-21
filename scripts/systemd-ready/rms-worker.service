@@ -5,9 +5,9 @@ After=network.target
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/apps/rms/worker
+WorkingDirectory=/opt/apps/rms/apps/worker
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/opt/apps/rms/worker/.venv/bin/python -m worker
+ExecStart=/opt/apps/rms/apps/worker/.venv/bin/python -m worker
 Restart=always
 RestartSec=5
 

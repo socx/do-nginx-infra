@@ -5,11 +5,12 @@ After=network.target
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/apps/rms/api
+WorkingDirectory=/opt/apps/rms/apps/api
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3000
-ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run start -- --host 127.0.0.1 --port 3000'
+Environment=API_PORT=3000
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && node src/index.js'
 Restart=always
 RestartSec=5
 
