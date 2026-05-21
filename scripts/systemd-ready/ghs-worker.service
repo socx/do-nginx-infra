@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/apps/ghs/worker
+WorkingDirectory=/opt/apps/ghs/apps/worker
 Environment=NODE_ENV=production
 ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run worker'
 Restart=always

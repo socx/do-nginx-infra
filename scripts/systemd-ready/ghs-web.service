@@ -5,11 +5,11 @@ After=network.target
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/apps/ghs/web
+WorkingDirectory=/opt/apps/ghs/apps/web
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=5175
-ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run start -- --host 127.0.0.1 --port 5175'
+ExecStart=/bin/bash -lc 'source "$HOME/.nvm/nvm.sh" && nvm use node >/dev/null && npm run preview -- --host 127.0.0.1 --port 5175'
 Restart=always
 RestartSec=5
 
